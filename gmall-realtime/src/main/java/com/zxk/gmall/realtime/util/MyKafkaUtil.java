@@ -57,4 +57,34 @@ public class MyKafkaUtil {
                 new SimpleStringSchema(),
                 properties);
     }
+
+    public static String getUpsertKafkaDDL(String topic) {
+        return " with ('connector' = 'upsert-kafka', " +
+                " 'topic' = '" + topic + "'," +
+                " 'properties.bootstrap.servers' = '" + BOOTSTRAP_SERVERS + "', " +
+                "  'key.format' = 'json', " +
+                "  'value.format' = 'json' "+
+                ")";
+    }
+
+
+    public static String getKafkaDDL(String topic, String groupId) {
+        return " with ('connector' = 'kafka', " +
+                " 'topic' = '" + topic + "'," +
+                " 'properties.bootstrap.servers' = '" + BOOTSTRAP_SERVERS + "', " +
+                " 'properties.group.id' = '" + groupId + "', " +
+                " 'format' = 'json', " +
+                " 'scan.startup.mode' = 'latest-offset')";
+    }
+
+    public static String getTopicDbDDL(String groupId) {
+        return "CREATE TABLE topic_db ( " +
+                " `database` STRING, " +
+                " `table` STRING, " +
+                " `type` STRING, " +
+                " `data` Map<STRING,STRING>, " +
+                " `old` Map<STRING,STRING>, " +
+                " `pt` AS PROCTIME() " +
+                ")"+getKafkaDDL("topic_db",groupId);
+    }
 }
