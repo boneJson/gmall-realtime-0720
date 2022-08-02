@@ -12,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Properties;
 //消费kafka/生产
+//kafka-console-producer.sh --broker-list hadoop102:9092 --topic test
 public class MyKafkaUtil {
     private static Properties properties = new Properties();
     private static final String BOOTSTRAP_SERVERS = "hadoop102:9092";
@@ -75,6 +76,7 @@ public class MyKafkaUtil {
                 " 'properties.group.id' = '" + groupId + "', " +
                 " 'format' = 'json', " +
                 " 'scan.startup.mode' = 'latest-offset')";
+//                " 'scan.startup.mode' = 'earliest-offset')";
     }
 
     public static String getTopicDbDDL(String groupId) {

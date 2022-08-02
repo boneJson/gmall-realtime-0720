@@ -5,10 +5,12 @@ import com.zxk.bean.Bean2;
 import com.zxk.gmall.realtime.util.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.types.Row;
 
 import java.time.Duration;
 
@@ -20,7 +22,7 @@ public class FlinkSQLJoinTest {
 
         //TTL状态存活时间,仅时间,没说重置
         System.out.println(tableEnv.getConfig().getIdleStateRetention());
-        tableEnv.getConfig().setIdleStateRetention(Duration.ofSeconds(10));
+        tableEnv.getConfig().setIdleStateRetention(Duration.ofHours(10));
 
         SingleOutputStreamOperator<Bean1> bean1DS = env.socketTextStream("hadoop102", 8888)
                 .map(line -> {
@@ -73,8 +75,13 @@ public class FlinkSQLJoinTest {
                 ") " + MyKafkaUtil.getUpsertKafkaDDL("test"));
 
         //将数据写入Kafka
-        tableEnv.executeSql("insert into result_table select * from t")
-                .print();
+        tableEnv.executeSql("insert into result_table select * from t");
+
+
+
+        table.execute().print();
+
+
 
         env.execute();
     }

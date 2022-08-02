@@ -9,7 +9,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import java.time.Duration;
-
+//交易域加购事务事实表
 public class DwdTradeCartAdd {
     public static void main(String[] args) throws Exception {
 
@@ -118,9 +118,10 @@ public class DwdTradeCartAdd {
                 "    order_time string, " +
                 "    source_type string, " +
                 "    source_id string, " +
-                "    dic_name string " +
-                ")" + MyKafkaUtil.getKafkaDDL(sinkTopic, ""));//消费者组为空
-        tableEnv.executeSql("insert into trade_cart_add select * from result_table");
+                "    dic_name string, " +
+                "    PRIMARY KEY (id) NOT ENFORCED " +
+                ")" + MyKafkaUtil.getUpsertKafkaDDL(sinkTopic));//消费者组为空
+        tableEnv.executeSql("insert into trade_cart_add select * from result_table").print();
 
         //TODO 7.启动任务
         env.execute("DwdTradeCartAdd");
