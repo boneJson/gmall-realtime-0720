@@ -12,6 +12,7 @@ public class DateFormatUtil {
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter dtfFull = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    //将时间日期字符串1659547891000,转为ms时间戳
     public static Long toTs(String dtStr, boolean isFull) {
 
         LocalDateTime localDateTime = null;
@@ -40,6 +41,12 @@ public class DateFormatUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(toYmdHms(System.currentTimeMillis()));
+
+        /*long ts = System.currentTimeMillis();
+        System.out.println(ts);//1659543673243
+        System.out.println(toYmdHms(ts));*/
+
+        String date = "2022-08-04 01:31:31";
+        System.out.println(toTs(date,true));
     }
 }

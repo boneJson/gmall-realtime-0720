@@ -8,7 +8,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import java.time.Duration;
-
+//dwd交易域订单明细事实表
 public class DwdTradeOrderDetail {
     public static void main(String[] args) throws Exception {
         //TODO 1.获取执行环境
