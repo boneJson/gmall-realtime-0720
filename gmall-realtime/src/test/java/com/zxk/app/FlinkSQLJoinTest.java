@@ -64,6 +64,7 @@ public class FlinkSQLJoinTest {
 //        DataStream<Tuple2<Boolean, Row>> retractStream = tableEnv.toRetractStream(table, Row.class);
 //        retractStream.print(">>>>>>>>>");
         tableEnv.createTemporaryView("t", table);
+        tableEnv.toChangelogStream(table).print();
 
         //创建Kafka表
         tableEnv.executeSql("" +

@@ -2,6 +2,7 @@ package com.zxk.gmall.realtime.app.func;
 
 import com.alibaba.fastjson.JSONObject;
 import com.zxk.gmall.realtime.common.GmallConfig;
+import com.zxk.gmall.realtime.util.DimUtil;
 import com.zxk.gmall.realtime.util.MyKafkaUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.configuration.Configuration;
@@ -37,6 +38,11 @@ public class DimSinkFunction extends RichSinkFunction<JSONObject> {
 
             //预编译
             preparedStatement = connection.prepareStatement(upsertSql);
+
+            //如果更新Phoenix数据,则删除Redis缓存数据
+            if ("update".equals(value.getString("type"))) {
+                DimUtil.delDimInfo(sinkTable.toUpperCase(),data.getString("id"));
+            }
 
             //执行写入,注意不同于mysql的自动提交事务,phoenix需开启自动提交/手动提交,而且只针对DML语句
             preparedStatement.execute();

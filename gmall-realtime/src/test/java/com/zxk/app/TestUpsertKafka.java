@@ -10,19 +10,22 @@ public class TestUpsertKafka {
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
         //创建Kafka表
         tableEnv.executeSql("" +
-                "create table result_table(" +
-                "    id string," +
-                "    name string," +
-                "    sex string," +
-                "    PRIMARY KEY (id) NOT ENFORCED " +
+                "create table result_table (" +
+                        "    id string," +
+                        "    name string," +
+                        "    tmp1ts bigint," +
+                        "    tmp2id string," +
+                        "    tmp2name string," +
+                        "    tmp2ts bigint" +
                 ") "+
-                " with ('connector' = 'upsert-kafka', " +
-                        " 'topic' = 'test'," +
+                " with ('connector' = 'kafka', " +
+                " 'topic' = 'test'," +
                 " 'properties.group.id' = 'test-2022-07-31', " +
                 " 'properties.bootstrap.servers' = 'hadoop102:9092 ', " +
-                        "  'key.format' = 'json', " +
-                        "  'value.format' = 'json' "+
-//                " 'scan.startup.mode' = 'latest-offset'"+
+//                "  'key.format' = 'json', " +
+                " 'json.ignore-parse-errors' = 'false',"+
+                "  'format' = 'json', "+
+                " 'scan.startup.mode' = 'latest-offset'"+
         ")"
         );
 

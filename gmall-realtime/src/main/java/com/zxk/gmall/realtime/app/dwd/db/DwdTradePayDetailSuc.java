@@ -81,6 +81,8 @@ public class DwdTradePayDetailSuc {
                 "    `ts` TIMESTAMP_LTZ(3) " +
                 ")" + MyKafkaUtil.getKafkaDDL("dwd_trade_order_detail", "dwd_trade_pay_detail"));
 
+        tableEnv.toChangelogStream(tableEnv.sqlQuery("select * from dwd_trade_order_detail_table")).print("dwd_trade_order_detail>>>");
+
         // TODO 4. 读取支付表数据
         tableEnv.executeSql(MyKafkaUtil.getTopicDbDDL("dwd_trade_pay_detail"));
         Table paymentInfo = tableEnv.sqlQuery("select " +
@@ -128,6 +130,7 @@ public class DwdTradePayDetailSuc {
                 "join base_dic FOR SYSTEM_TIME AS OF pi.pt dic " +
                 "on pi.payment_type = dic.dic_code");
         tableEnv.createTemporaryView("result_table", resultTable);
+        tableEnv.toChangelogStream(tableEnv.sqlQuery("select * from result_table")).print("pay_suc>>>");
 
         //TODO 7. 创建 Kafka dwd_trade_pay_detail 表
         tableEnv.executeSql("create table dwd_trade_pay_detail_suc( " +
@@ -155,6 +158,7 @@ public class DwdTradePayDetailSuc {
         //TODO 8. 将关联结果写入 Upsert-Kafka 表
         tableEnv.executeSql("insert into dwd_trade_pay_detail_suc select * from result_table")
                 .print();
+
 
         env.execute();
     }

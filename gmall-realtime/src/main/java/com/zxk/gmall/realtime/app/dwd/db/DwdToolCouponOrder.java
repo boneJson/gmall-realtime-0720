@@ -2,7 +2,6 @@ package com.zxk.gmall.realtime.app.dwd.db;
 
 import com.alibaba.fastjson.JSON;
 import com.zxk.gmall.realtime.bean.CouponUseOrderBean;
-import com.zxk.gmall.realtime.bean.CouponUsePayBean;
 import com.zxk.gmall.realtime.util.MyKafkaUtil;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -14,9 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 //交易域订单使用券事实表
-public class DwdToopCouponPay {
+public class DwdToolCouponOrder {
     public static void main(String[] args) throws Exception {
-
         // TODO 1. 环境准备
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(4);
@@ -46,31 +44,31 @@ public class DwdToopCouponPay {
                 "`type` string, " +
                 "`old` string, " +
                 "`ts` string " +
-                ")" + MyKafkaUtil.getKafkaDDL("topic_db", "dwd_tool_coupon_pay_211027"));
+                ")" + MyKafkaUtil.getKafkaDDL("topic_db", "dwd_tool_coupon_order_211027"));
 
         // TODO 4. 读取优惠券领用表数据，封装为流
-        Table couponUsePay = tableEnv.sqlQuery("select " +
+        Table couponUseOrder = tableEnv.sqlQuery("select " +
                 "data['id'] id, " +
                 "data['coupon_id'] coupon_id, " +
                 "data['user_id'] user_id, " +
                 "data['order_id'] order_id, " +
-                "date_format(data['used_time'],'yyyy-MM-dd') date_id, " +
-                "data['used_time'] used_time, " +
+                "date_format(data['using_time'],'yyyy-MM-dd') date_id, " +
+                "data['using_time'] using_time, " +
                 "`old`, " +
                 "ts " +
                 "from topic_db " +
                 "where `table` = 'coupon_use' " +
                 "and `type` = 'update' ");
-        DataStream<CouponUsePayBean> couponUsePayDS = tableEnv.toAppendStream(couponUsePay, CouponUsePayBean.class);
+        DataStream<CouponUseOrderBean> couponUseOrderDS = tableEnv.toAppendStream(couponUseOrder, CouponUseOrderBean.class);
 
         // TODO 5. 过滤满足条件的优惠券下单数据，封装为表
-        SingleOutputStreamOperator<CouponUsePayBean> filteredDS = couponUsePayDS.filter(
-                couponUsePayBean -> {
-                    String old = couponUsePayBean.getOld();
+        SingleOutputStreamOperator<CouponUseOrderBean> filteredDS = couponUseOrderDS.filter(
+                couponUseOrderBean -> {
+                    String old = couponUseOrderBean.getOld();
                     if (old != null) {
                         Map oldMap = JSON.parseObject(old, Map.class);
                         Set changeKeys = oldMap.keySet();
-                        return changeKeys.contains("used_time");
+                        return changeKeys.contains("using_time");
                     }
                     return false;
                 }
@@ -79,26 +77,26 @@ public class DwdToopCouponPay {
         tableEnv.createTemporaryView("result_table", resultTable);
 
         // TODO 6. 建立 Upsert-Kafka dwd_tool_coupon_order 表
-        tableEnv.executeSql("create table dwd_tool_coupon_pay( " +
+        tableEnv.executeSql("create table dwd_tool_coupon_order( " +
                 "id string, " +
                 "coupon_id string, " +
                 "user_id string, " +
                 "order_id string, " +
                 "date_id string, " +
-                "payment_time string, " +
+                "order_time string, " +
                 "ts string, " +
                 "primary key(id) not enforced " +
-                ")" + MyKafkaUtil.getUpsertKafkaDDL("dwd_tool_coupon_pay"));
+                ")" + MyKafkaUtil.getUpsertKafkaDDL("dwd_tool_coupon_order"));
 
         // TODO 7. 将数据写入 Upsert-Kafka 表
         tableEnv.executeSql("" +
-                "insert into dwd_tool_coupon_pay select " +
+                "insert into dwd_tool_coupon_order select " +
                 "id, " +
                 "coupon_id, " +
                 "user_id, " +
                 "order_id, " +
                 "date_id, " +
-                "used_time payment_time, " +
+                "using_time order_time, " +
                 "ts from result_table")
                 .print();
 

@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="gmall-realtime" />
         <module name="gmall-realtime-0720" />
+        <module name="gmall-publisher" />
       </profile>
     </annotationProcessing>
   </component>
